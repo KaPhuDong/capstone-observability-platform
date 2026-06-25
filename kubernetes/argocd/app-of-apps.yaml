@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_ORG/capstone-observability-platform  # Đổi URL repo
+    repoURL: https://github.com/KaPhuDong/capstone-observability-platform
     targetRevision: HEAD
     path: kubernetes/argocd/applications
 

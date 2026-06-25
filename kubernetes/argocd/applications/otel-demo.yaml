@@ -28,7 +28,7 @@ spec:
         releaseName: otel-demo
         valueFiles:
           - $values/kubernetes/applications/otel-demo-values.yaml
-    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform  # Đổi URL repo
+    - repoURL: https://github.com/KaPhuDong/capstone-observability-platform
       targetRevision: HEAD
       ref: values
 

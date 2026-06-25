@@ -27,7 +27,7 @@ spec:
         releaseName: kube-prometheus-stack
         valueFiles:
           - $values/kubernetes/monitoring/prometheus/values.yaml
-    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform
+    - repoURL: https://github.com/KaPhuDong/capstone-observability-platform
       targetRevision: HEAD
       ref: values
 
@@ -72,7 +72,7 @@ spec:
         releaseName: loki
         valueFiles:
           - $values/kubernetes/monitoring/loki/values.yaml
-    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform
+    - repoURL: https://github.com/KaPhuDong/capstone-observability-platform
       targetRevision: HEAD
       ref: values
 
@@ -116,7 +116,7 @@ spec:
         releaseName: tempo
         valueFiles:
           - $values/kubernetes/monitoring/tempo/values.yaml
-    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform
+    - repoURL: https://github.com/KaPhuDong/capstone-observability-platform
       targetRevision: HEAD
       ref: values
 
@@ -160,7 +160,7 @@ spec:
         releaseName: promtail
         valueFiles:
           - $values/kubernetes/monitoring/loki/promtail-values.yaml
-    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform
+    - repoURL: https://github.com/KaPhuDong/capstone-observability-platform
       targetRevision: HEAD
       ref: values
 
