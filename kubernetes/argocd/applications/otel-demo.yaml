@@ -1,0 +1,45 @@
+---
+# ArgoCD Application: OpenTelemetry Demo
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-demo
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: capstone-observability
+spec:
+  project: default
+
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-demo
+    targetRevision: "0.37.0"  # Kiểm tra version mới nhất tại https://github.com/open-telemetry/opentelemetry-helm-charts/releases
+    helm:
+      releaseName: otel-demo
+      valueFiles:
+        - $values/kubernetes/applications/otel-demo-values.yaml
+
+  # Tham chiếu values từ repo của mình
+  sources:
+    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+      chart: opentelemetry-demo
+      targetRevision: "0.37.0"
+      helm:
+        releaseName: otel-demo
+        valueFiles:
+          - $values/kubernetes/applications/otel-demo-values.yaml
+    - repoURL: https://github.com/YOUR_ORG/capstone-observability-platform  # Đổi URL repo
+      targetRevision: HEAD
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: otel-demo
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,34 @@
+# ArgoCD Helm values
+global:
+  domain: argocd.local  # Đổi thành domain thật khi production
+
+# Server config
+server:
+  replicas: 1
+
+  service:
+    type: ClusterIP  # Dùng ClusterIP + port-forward khi dev
+
+  # Ingress (enable khi có ingress controller)
+  ingress:
+    enabled: false
+    # ingressClassName: nginx
+    # hosts:
+    #   - argocd.example.com
+
+  config:
+    # Cho phép deploy lên cùng cluster (không cần external cluster registration)
+    application.instanceLabelKey: argocd.argoproj.io/app-name
+
+redis:
+  enabled: true
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  enabled: true
+  replicas: 1
+
+notifications:
+  enabled: false  # Bật sau nếu cần Slack/Email notifications

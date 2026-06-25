@@ -1,0 +1,19 @@
+---
+# Namespace cho ArgoCD
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    app.kubernetes.io/managed-by: manual
+
+---
+# Cài ArgoCD từ official manifest
+# kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml -n argocd
+#
+# Hoặc dùng Helm (khuyến nghị):
+# helm repo add argo https://argoproj.github.io/argo-helm
+# helm install argocd argo/argo-cd \
+#   --namespace argocd \
+#   --version 7.3.11 \
+#   --values argocd-values.yaml

@@ -1,0 +1,114 @@
+---
+# Telemetry Aggregator: thu thập từ Prometheus/Loki/Tempo, gom thành event, gửi AI
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-aggregator
+  namespace: ai-gateway
+  labels:
+    app: telemetry-aggregator
+    app.kubernetes.io/part-of: capstone-observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemetry-aggregator
+  template:
+    metadata:
+      labels:
+        app: telemetry-aggregator
+    spec:
+      serviceAccountName: telemetry-aggregator
+      containers:
+        - name: aggregator
+          image: capstone/telemetry-aggregator:latest  # Build từ src/telemetry-aggregator/
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: PROMETHEUS_URL
+              value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+            - name: LOKI_URL
+              value: "http://loki-gateway.monitoring.svc.cluster.local"
+            - name: TEMPO_URL
+              value: "http://tempo.monitoring.svc.cluster.local:3100"
+            - name: AI_ENDPOINT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ai-gateway-secrets
+                  key: ai-endpoint-url
+            - name: AI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-gateway-secrets
+                  key: ai-api-key
+            - name: POLL_INTERVAL_SECONDS
+              value: "60"
+            - name: ERROR_RATE_THRESHOLD
+              value: "5.0"
+            - name: LATENCY_P95_THRESHOLD_MS
+              value: "2000"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telemetry-aggregator
+  namespace: ai-gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-aggregator
+  namespace: ai-gateway
+  labels:
+    app: telemetry-aggregator
+spec:
+  selector:
+    app: telemetry-aggregator
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+
+---
+# Secret template (điền giá trị thật sau)
+# kubectl create secret generic ai-gateway-secrets \
+#   --from-literal=ai-endpoint-url="https://api.openai.com/v1/chat/completions" \
+#   --from-literal=ai-api-key="sk-..." \
+#   -n ai-gateway
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ai-gateway-secrets
+  namespace: ai-gateway
+type: Opaque
+stringData:
+  ai-endpoint-url: "https://api.openai.com/v1/chat/completions"
+  ai-api-key: "REPLACE_WITH_YOUR_API_KEY"

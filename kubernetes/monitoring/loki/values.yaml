@@ -1,0 +1,94 @@
+# Loki Helm values (Simple Scalable mode)
+
+# Deployment mode
+deploymentMode: SingleBinary
+
+loki:
+  # Common config
+  commonConfig:
+    replication_factor: 1
+
+  # Storage config (local filesystem cho dev, S3 cho prod)
+  storage:
+    type: filesystem
+    # Để enable S3 backend (production):
+    # bucketNames:
+    #   chunks: loki-chunks
+    #   ruler: loki-ruler
+    # type: s3
+    # s3:
+    #   region: ap-southeast-1
+
+  # Limits
+  limits_config:
+    retention_period: 168h  # 7 days
+    ingestion_rate_mb: 10
+    ingestion_burst_size_mb: 20
+    max_query_series: 1000
+    max_query_lookback: 720h
+
+  # Schema config
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+  # Compactor (xóa logs cũ)
+  compactor:
+    working_directory: /var/loki/compactor
+    compaction_interval: 10m
+    retention_enabled: true
+    retention_delete_delay: 2h
+    retention_delete_worker_count: 150
+
+# Single Binary deployment
+singleBinary:
+  replicas: 1
+
+  persistence:
+    enabled: true
+    storageClass: gp3
+    size: 10Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Read/Write components (tắt vì dùng SingleBinary)
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+backend:
+  replicas: 0
+
+# Gateway (nginx)
+gateway:
+  enabled: true
+  replicas: 1
+  service:
+    type: ClusterIP
+
+# Monitoring
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  lokiCanary:
+    enabled: false
+
+# Test
+test:
+  enabled: false

@@ -1,0 +1,27 @@
+---
+# App of Apps pattern: ArgoCD quản lý tất cả application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: capstone-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_ORG/capstone-observability-platform  # Đổi URL repo
+    targetRevision: HEAD
+    path: kubernetes/argocd/applications
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,73 @@
+# Tempo Helm values (distributed tracing backend)
+
+tempo:
+  # Storage
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      # Để dùng S3 (production):
+      # backend: s3
+      # s3:
+      #   bucket: tempo-traces
+      #   endpoint: s3.ap-southeast-1.amazonaws.com
+      #   region: ap-southeast-1
+
+  # Receivers (nhận traces từ OTel Collector)
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+        grpc:
+          endpoint: 0.0.0.0:14250
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+    zipkin:
+      endpoint: 0.0.0.0:9411
+
+  # Retention
+  retention: 720h  # 30 days
+
+  # Metrics generator (tạo metrics từ traces)
+  metricsGenerator:
+    enabled: true
+    remoteWriteUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+  # Search config
+  search:
+    enabled: true
+    maxDuration: 0s  # Không giới hạn
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+# Persistence
+persistence:
+  enabled: true
+  storageClassName: gp3
+  size: 10Gi
+
+# Service
+service:
+  type: ClusterIP
+
+# ServiceMonitor cho Prometheus
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  additionalLabels:
+    release: kube-prometheus-stack

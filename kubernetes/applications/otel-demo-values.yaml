@@ -1,0 +1,79 @@
+# Values cho OpenTelemetry Demo Helm chart
+# Tham khảo: https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-demo/values.yaml
+
+default:
+  # Resource limits cho các service trong OTel Demo
+  resources:
+    limits:
+      memory: 300Mi
+
+# ============================================================
+# OpenTelemetry Collector (bên trong OTel Demo)
+# Sẽ forward telemetry ra ngoài tới Prometheus/Loki/Tempo
+# ============================================================
+opentelemetry-collector:
+  enabled: true
+  config:
+    exporters:
+      # Gửi metrics tới Prometheus (kube-prometheus-stack)
+      prometheusremotewrite:
+        endpoint: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+      # Gửi traces tới Tempo
+      otlp/tempo:
+        endpoint: "http://tempo.monitoring.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
+      # Gửi logs tới Loki qua Loki exporter
+      loki:
+        endpoint: "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+
+      # Debug exporter (bỏ khi production)
+      debug:
+        verbosity: basic
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp, prometheus]
+          processors: [batch, memory_limiter]
+          exporters: [prometheusremotewrite, debug]
+        traces:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [otlp/tempo, debug]
+        logs:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [loki, debug]
+
+# ============================================================
+# Tắt các component observability built-in của OTel Demo
+# (Dùng Prometheus/Loki/Tempo/Grafana bên ngoài thay thế)
+# ============================================================
+jaeger:
+  enabled: false  # Dùng Tempo thay thế
+
+prometheus:
+  enabled: false  # Dùng kube-prometheus-stack thay thế
+
+grafana:
+  enabled: false  # Dùng Grafana từ kube-prometheus-stack thay thế
+
+opensearch:
+  enabled: false  # Dùng Loki thay thế
+
+# ============================================================
+# Load Generator - sinh traffic liên tục
+# ============================================================
+components:
+  loadgenerator:
+    enabled: true
+    env:
+      - name: LOCUST_USERS
+        value: "10"
+      - name: LOCUST_SPAWN_RATE
+        value: "1"
+      - name: LOCUST_HOST
+        value: "http://{{ include \"otel-demo.name\" . }}-frontend:8080"
