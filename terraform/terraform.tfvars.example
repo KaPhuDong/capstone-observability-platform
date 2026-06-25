@@ -14,3 +14,10 @@ node_group_max_size     = 5
 node_instance_types     = ["t3.xlarge"]
 
 enable_argocd = true
+
+# IAM users/roles cần quyền kubectl admin vào cluster
+# Thêm ARN của bạn vào đây để tránh tạo Access Entry thủ công sau khi apply
+admin_iam_arns = [
+  # "arn:aws:iam::ACCOUNT_ID:user/admin",
+  # "arn:aws:iam::ACCOUNT_ID:role/DevOpsRole",
+]

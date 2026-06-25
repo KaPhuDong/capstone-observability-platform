@@ -15,6 +15,10 @@ module "eks" {
   # Enable IRSA (IAM Roles for Service Accounts)
   enable_irsa = true
 
+  # Automatically grant cluster creator admin permissions
+  # Người chạy terraform apply sẽ tự động có quyền admin
+  enable_cluster_creator_admin_permissions = true
+
   # EKS Managed Add-ons
   cluster_addons = {
     coredns = {
@@ -75,12 +79,21 @@ module "eks" {
   }
 
   # Cluster access entries (modern approach, replaces aws-auth ConfigMap)
+  # enable_cluster_creator_admin_permissions đã cover người chạy terraform.
+  # access_entries dùng để thêm IAM users/roles khác từ var.admin_iam_arns.
   access_entries = {
-    # Allow admin access; add your IAM role/user ARN here
-    # admin = {
-    #   principal_arn     = "arn:aws:iam::ACCOUNT_ID:role/AdminRole"
-    #   kubernetes_groups = ["system:masters"]
-    # }
+    for idx, arn in var.admin_iam_arns : "admin-${idx}" => {
+      principal_arn = arn
+
+      policy_associations = {
+        cluster_admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
   }
 
   tags = {

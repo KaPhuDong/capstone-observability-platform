@@ -57,3 +57,14 @@ variable "enable_argocd" {
   type        = bool
   default     = true
 }
+
+variable "admin_iam_arns" {
+  description = "List of IAM user/role ARNs to grant EKS cluster-admin access via Access Entry"
+  type        = list(string)
+  default     = []
+  # Example:
+  # admin_iam_arns = [
+  #   "arn:aws:iam::411706530517:user/admin",
+  #   "arn:aws:iam::411706530517:role/MyDevRole",
+  # ]
+}
