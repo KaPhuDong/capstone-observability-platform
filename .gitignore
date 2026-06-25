@@ -2,7 +2,7 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl should be committed to version control
 terraform.tfvars
 *.tfvars.json
 
